@@ -230,3 +230,26 @@
         (ok true)
     )
 )
+
+(define-public (vote-on-proposal (property-id uint) (vote-for bool))
+    (let
+        (
+            (proposal (unwrap! (map-get? property-proposals property-id) err-no-active-proposal))
+            (voter-shares (get-share-balance property-id tx-sender))
+        )
+        (asserts! (< block-height (get end-height proposal)) err-proposal-expired)
+        (asserts! (not (default-to false (map-get? votes {property-id: property-id, voter: tx-sender}))) err-already-voted)
+        
+        ;; Record the vote
+        (map-set votes {property-id: property-id, voter: tx-sender} true)
+        
+        ;; Update vote counts based on share weight
+        (if vote-for
+            (map-set property-proposals property-id
+                (merge proposal {votes-for: (+ (get votes-for proposal) voter-shares)}))
+            (map-set property-proposals property-id
+                (merge proposal {votes-against: (+ (get votes-against proposal) voter-shares)}))
+        )
+        (ok true)
+    )
+)
