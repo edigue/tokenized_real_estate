@@ -161,3 +161,25 @@
         (ok property-id)
     )
 )
+
+(define-public (record-rental-payment (property-id uint) (amount uint))
+    (let
+        (
+            (property (unwrap! (map-get? properties property-id) err-not-found))
+            (current-month (/ block-height u144)) ;; Approximate monthly blocks
+        )
+        ;; Check authorization
+        (asserts! (is-eq tx-sender (get owner property)) err-unauthorized)
+        
+        ;; Record the rental payment for current month
+        (map-set rental-payments 
+            {property-id: property-id, month: current-month}
+            amount)
+        
+        ;; Update total rental income in property details
+        (map-set properties property-id
+            (merge property {rental-income: (+ (get rental-income property) amount)}))
+        
+        (ok true)
+    )
+)
