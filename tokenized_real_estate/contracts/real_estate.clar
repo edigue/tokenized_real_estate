@@ -79,3 +79,24 @@
     {property-id: uint, month: uint}
     uint
 )
+
+
+;; Read only functions
+
+(define-read-only (get-property-details (property-id uint))
+    (map-get? properties property-id)
+)
+
+(define-read-only (get-share-balance (property-id uint) (holder principal))
+    (default-to u0
+        (map-get? share-holdings {property-id: property-id, holder: holder})
+    )
+)
+
+(define-read-only (get-platform-fee)
+    (var-get platform-fee)
+)
+
+(define-read-only (get-active-proposal (property-id uint))
+    (map-get? property-proposals property-id)
+)
