@@ -22,3 +22,60 @@
 (define-data-var total-properties uint u0)
 (define-data-var minimum-shares-for-proposal uint u100) ;; Minimum shares to create proposal
 (define-data-var proposal-duration uint u1440) ;; Blocks (approximately 10 days)
+
+;; Data Maps
+(define-map properties
+    uint 
+    {
+        owner: principal,
+        price: uint,
+        total-shares: uint,
+        available-shares: uint,
+        property-address: (string-ascii 100),
+        property-details: (string-ascii 500),
+        verified: bool,
+        listed: bool,
+        locked: bool,
+        rental-income: uint,
+        last-maintenance: uint,
+        creation-height: uint
+    }
+)
+
+(define-map share-holdings
+    {property-id: uint, holder: principal}
+    uint
+)
+
+(define-map property-proposals
+    uint
+    {
+        proposer: principal,
+        proposal-type: (string-ascii 20),
+        details: (string-ascii 500),
+        amount: uint,
+        votes-for: uint,
+        votes-against: uint,
+        end-height: uint,
+        executed: bool
+    }
+)
+
+(define-map votes
+    {property-id: uint, voter: principal}
+    bool
+)
+
+(define-map property-maintenance
+    uint
+    {
+        last-service-date: uint,
+        total-spent: uint,
+        service-history: (list 10 (string-ascii 100))
+    }
+)
+
+(define-map rental-payments
+    {property-id: uint, month: uint}
+    uint
+)
