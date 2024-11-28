@@ -117,3 +117,47 @@
         (ok (/ (- (get price property) maintenance-costs) (get total-shares property)))
     )
 )
+
+;; Public Functions
+
+(define-public (list-property 
+        (price uint)
+        (total-shares uint)
+        (property-address (string-ascii 100))
+        (property-details (string-ascii 500)))
+    (let
+        (
+            (property-id (var-get total-properties))
+            (block-height block-height)
+        )
+        (asserts! (> price u0) err-invalid-price)
+        (asserts! (> total-shares u0) err-invalid-price)
+        
+        ;; Check if map-insert was successful
+        (asserts! (map-insert properties property-id
+            {
+                owner: tx-sender,
+                price: price,
+                total-shares: total-shares,
+                available-shares: total-shares,
+                property-address: property-address,
+                property-details: property-details,
+                verified: false,
+                listed: true,
+                locked: false,
+                rental-income: u0,
+                last-maintenance: block-height,
+                creation-height: block-height
+            }) err-already-listed)
+        
+        ;; Update total properties counter
+        (var-set total-properties (+ property-id u1))
+        
+        ;; Set initial share holdings
+        (map-set share-holdings 
+            {property-id: property-id, holder: tx-sender}
+            total-shares)
+        
+        (ok property-id)
+    )
+)
