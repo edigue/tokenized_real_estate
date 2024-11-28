@@ -17,3 +17,8 @@
 (define-constant err-minimum-shares (err u111))
 (define-constant err-property-locked (err u112))
 
+;; Data Variables
+(define-data-var platform-fee uint u25) ;; 2.5% fee
+(define-data-var total-properties uint u0)
+(define-data-var minimum-shares-for-proposal uint u100) ;; Minimum shares to create proposal
+(define-data-var proposal-duration uint u1440) ;; Blocks (approximately 10 days)
