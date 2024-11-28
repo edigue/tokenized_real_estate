@@ -270,3 +270,35 @@
 )
 
 
+(define-public (buy-shares (property-id uint) (share-amount uint))
+    (let
+        (
+            (property (unwrap! (map-get? properties property-id) err-not-found))
+            (price-per-share (/ (get price property) (get total-shares property)))
+            (total-cost (* price-per-share share-amount))
+            (fee (/ (* total-cost (var-get platform-fee)) u1000))
+            (seller-amount (- total-cost fee))
+            (buyer-current-shares (get-share-balance property-id tx-sender))
+        )
+        (asserts! (get listed property) err-not-listed)
+        (asserts! (>= (get available-shares property) share-amount) err-insufficient-funds)
+        (asserts! (not (get locked property)) err-property-locked)
+        
+        ;; Transfer STX payment
+        (try! (stx-transfer? total-cost tx-sender (get owner property)))
+        (try! (stx-transfer? fee tx-sender contract-owner))
+        
+        ;; Update share balances
+        (map-set share-holdings 
+            {property-id: property-id, holder: tx-sender}
+            (+ buyer-current-shares share-amount))
+        
+        ;; Update available shares
+        (map-set properties property-id
+            (merge property 
+                {available-shares: (- (get available-shares property) share-amount)}))
+        
+        (ok true)
+    )
+)
+
