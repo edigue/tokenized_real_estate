@@ -198,3 +198,35 @@
         (ok true)
     )
 )
+
+(define-public (create-maintenance-proposal 
+        (property-id uint)
+        (details (string-ascii 500))
+        (amount uint))
+    (let
+        (
+            (property (unwrap! (map-get? properties property-id) err-not-found))
+            (proposer-shares (get-share-balance property-id tx-sender))
+        )
+        ;; Check if proposer has minimum required shares
+        (asserts! (>= proposer-shares (var-get minimum-shares-for-proposal)) err-minimum-shares)
+        
+        ;; Check if property is not locked
+        (asserts! (not (get locked property)) err-property-locked)
+        
+        ;; Create the proposal
+        (map-set property-proposals property-id
+            {
+                proposer: tx-sender,
+                proposal-type: "MAINTENANCE",
+                details: details,
+                amount: amount,
+                votes-for: u0,
+                votes-against: u0,
+                end-height: (+ block-height (var-get proposal-duration)),
+                executed: false
+            })
+        
+        (ok true)
+    )
+)
