@@ -302,3 +302,33 @@
     )
 )
 
+;; Admin Functions
+
+(define-public (update-platform-fee (new-fee uint))
+    (begin
+        (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+        (asserts! (<= new-fee u100) err-invalid-price)
+        (var-set platform-fee new-fee)
+        (ok true)
+    )
+)
+
+(define-public (update-minimum-shares (new-minimum uint))
+    (begin
+        (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+        (var-set minimum-shares-for-proposal new-minimum)
+        (ok true)
+    )
+)
+
+(define-public (lock-property (property-id uint))
+    (let 
+        (
+            (property (unwrap! (map-get? properties property-id) err-not-found))
+        )
+        (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+        (map-set properties property-id 
+            (merge property {locked: true}))  ;; Remove try! here
+        (ok true)  ;; This is already a response type
+    )
+)
