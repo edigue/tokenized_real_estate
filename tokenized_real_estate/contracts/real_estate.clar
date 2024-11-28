@@ -183,3 +183,18 @@
         (ok true)
     )
 )
+
+(define-public (distribute-rental-income (property-id uint))
+    (let
+        (
+            (property (unwrap! (map-get? properties property-id) err-not-found))
+            (total-income (get rental-income property))
+            (total-shares (get total-shares property))
+            (holder-shares (get-share-balance property-id tx-sender))
+            (holder-share (/ (* total-income holder-shares) total-shares))
+        )
+        (asserts! (> holder-shares u0) err-unauthorized)
+        (try! (stx-transfer? holder-share contract-owner tx-sender))
+        (ok true)
+    )
+)
