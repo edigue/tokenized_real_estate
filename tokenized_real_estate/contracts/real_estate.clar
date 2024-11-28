@@ -253,3 +253,20 @@
         (ok true)
     )
 )
+
+(define-public (update-property-price (property-id uint) (new-price uint))
+    (let
+        (
+            (property (unwrap! (map-get? properties property-id) err-not-found))
+        )
+        (asserts! (is-eq tx-sender (get owner property)) err-unauthorized)
+        (asserts! (> new-price u0) err-invalid-price)
+        
+        (map-set properties property-id
+            (merge property {price: new-price}))
+        
+        (ok true)
+    )
+)
+
+
